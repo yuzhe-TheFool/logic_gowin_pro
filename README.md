@@ -1,79 +1,112 @@
-# FoLogic-fw-keil
+# FoLogic HDL
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-red.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-**FoLogic-fw** is an open-source firmware for **FoLogic** — a 16-channel 200MHz logic analyzer
-based on **FPGA + USB 2.0 PHY (CY7C68013A)** architecture.
+**FoLogic** is an open-source 16-channel 200MHz logic analyzer based on
+**FPGA + USB 2.0 PHY (CY7C68013A)** architecture.
 
-This firmware runs on the **Cypress EZ-USB FX2LP (CY7C68013A)** microcontroller,
-handling USB protocol, GPIF bus control, and command dispatching between the
-PC host and the FPGA logic.
-
-This project is derived from [DreamSourceLab/DSLogic-fw-keil](https://github.com/DreamSourceLab/DSLogic-fw-keil),
-with significant modifications and enhancements for the FoLogic logic analyzer platform.
+This repository contains the **FPGA HDL source code** for the FoLogic logic analyzer,
+implemented on **Gowin GW2A-18 FPGA** (LogiPi G1 core board) with DDR3 SDRAM support.
 
 ## Project Structure
 
-| Directory/File       | Description                              |
-|----------------------|------------------------------------------|
-| `Source/`            | Firmware source code                     |
-| `Source/include/`    | Header files (Fx2, registers, etc.)      |
-| `Output/`            | Compiled binary output                   |
-| `FoLogic.uvproj`     | Keil uVision project file                |
-| `hex2bix.exe`        | Cypress hex2bix converter utility         |
+```
+logic/
+├── src/                          # HDL source files
+│   ├── logic_top.v               # Top-level module
+│   ├── sample_clock_gen.v        # Sample clock generation with prescaler
+│   ├── sample_trig.v             # Trigger matching (edge/level/mask)
+│   ├── data_capture.v            # Capture control (buffer/stream mode)
+│   ├── data_read.v               # Data readout and USB interface
+│   ├── cy_config_decoder.v       # USB TLV command decoder
+│   ├── cy_config_reg.v           # Configuration register file
+│   ├── axi4_control.v            # AXI4 master controller
+│   ├── axi4_wcontrol.v           # AXI4 write channel
+│   ├── axi4_rcontrol.v           # AXI4 read channel
+│   ├── axi4_ddr_unit.v           # DDR3 memory interface wrapper
+│   ├── gowin_rpll/               # Gowin PLL IP (100MHz core clock)
+│   ├── gowin_rpll1/              # Gowin PLL IP (sample clock)
+│   ├── fifo_hs/                  # Write FIFO (Gowin IP)
+│   ├── rfifo_hs/                 # Read FIFO (Gowin IP)
+│   ├── consfifo_hs/              # Continuous mode FIFO (Gowin IP)
+│   └── ddr3_memory_interface/    # DDR3 controller (Gowin IP)
+├── impl/                         # Gowin implementation results
+└── logic.gprj                    # Gowin IDE project file
+```
 
-## Components
+## Architecture
 
-The firmware consists of the following source files:
+The system uses a **three-layer architecture**:
 
-| File                | Description                                                    |
-|---------------------|----------------------------------------------------------------|
-| `FoLogic.c`         | Main logic: command processing, GPIF control, endpoint setup   |
-| `interface.c`       | GPIF waveform definitions, capture start/stop, interface switching |
-| `fw.c`              | Cypress firmware framework: USB task dispatcher, device request parser |
-| `dscr.a51`          | USB descriptor table (device/config/string descriptors)        |
+| Layer | Component | Function |
+|-------|-----------|----------|
+| **PC Host** | sigrok/PulseView | Device management, waveform display, protocol decoding |
+| **FX2 Controller** | CY7C68013A | USB protocol bridge, GPIF bus control, command dispatch |
+| **FPGA Logic** | GW2A-18 | High-speed sampling, trigger matching, DDR3 caching |
+
+### Data Flow
+
+**Buffer mode** (high-speed capture):
+```
+PC → USB EP0 → FX2 → GPIF → FPGA config → IDDR sampling → DDR3 → GPIF read → USB EP6 → PC
+```
+
+**Stream mode** (continuous capture):
+```
+PC → USB EP0 → FX2 → GPIF → FPGA config → sampling → cons_fifo → EP6 AUTOIN → USB → PC
+```
+
+## Key Features
+
+- **16 channels** parallel sampling
+- **200MHz** max sample rate (100MHz core + IDDR dual-edge)
+- **Up to 2GB** DDR3 SDRAM storage
+- **Buffer & Stream** dual-mode data acquisition
+- **Hardware trigger**: edge (rise/fall/both), level (high/low), mask trigger
+- **USB 2.0 High-Speed** (480Mbps, ~40MB/s effective bandwidth)
+- **Compatible with sigrok/PulseView** for waveform display and protocol decoding
 
 ## Build Instructions
 
-1. Install [Keil C51](https://www.keil.com/c51/) IDE
-2. Open `FoLogic.uvproj` in Keil uVision
-3. Build the project (**Project → Build Target**)
-4. The compiled firmware will be generated in the `Output/` directory:
-   - `FoLogic.fw` - Firmware image for Cypress FX2
-   - `FoLogic.iic` - I2C EEPROM image for boot loading
+1. Install [Gowin EDA](https://www.gowinsemi.com/) (V1.9.12.03 or later)
+2. Open `logic/logic.gprj` in Gowin IDE
+3. **Important:** Go to **Project → Configuration → Dual-Purpose Pin**, check **"Use SSPI as regular IO"**:
+   
+   ![Dual-Purpose Pin Configuration](gui_config.jpg)
+   
+4. Run **Synthesis → Place & Route → Generate Bitstream**
+5. The output files will be in `logic/impl/pnr/`
 
-> **Note:** The build process automatically runs `hex2bix` to convert the HEX output
-> to `.fw` and `.iic` formats suitable for FX2 loading.
+### Quick Download (No Compilation Needed)
 
-## Hardware Platform
+A pre-built bitstream file is provided — you can download it directly without running the full synthesis flow:
 
-| Component         | Specification                                       |
-|-------------------|-----------------------------------------------------|
-| **USB Controller**| Cypress CY7C68013A (EZ-USB FX2LP), 48MHz           |
-| **FPGA**          | Gowin GW2A-18 (LogiPi G1 core board)               |
-| **DDR3**          | Compatible with DDR3-800, up to 2GB                 |
-| **Sampling**      | 16 channels, up to 200MHz (DDR, IDDR dual-edge)    |
-| **Interface**     | GPIF FIFO (30MHz, 16-bit)                           |
-| **USB Speed**     | USB 2.0 High-Speed (480Mbps, ~40MB/s effective)    |
+1. Open **Gowin EDA Programmer** (Tools → Programmer)
+2. Click **Add Device** and select `logic.fs`
+3. Connect the device and click **Program/Configure**
+
+> `logic.fs` is the FPGA bitstream file ready for download to the Gowin GW2A-18 FPGA.
+>
+> 📥 **Download the latest release:** [stable_v1](https://github.com/yuzhe-TheFool/logic_gowin_pro/releases/tag/stable_v1)
 
 ## Related Repositories
 
 | Repository | Description |
 |------------|-------------|
-| [logic_gowin_pro](https://github.com/yuzhe-TheFool/logic_gowin_pro) | FPGA HDL source code (Gowin GW2A-18) |
+| [FoLogic-fw-keil-master](https://github.com/yuzhe-TheFool/FoLogic-fw-keil-master) | FX2LP (CY7C68013A) firmware source code (Keil C51) |
 | [pulseview](https://github.com/yuzhe-TheFool/pulseview) | Host software for waveform display, protocol decoding ([Releases](https://github.com/yuzhe-TheFool/pulseview/releases/tag/tag1)) |
 
 ## License
 
-FoLogic-firmware is licensed under the **GNU General Public License v3 or later** (GPL-3.0-or-later).
+This project is licensed under the **GNU General Public License v3 or later** (GPL-3.0-or-later).
 
-It uses additional library EZUSB.lib, provided by Cypress (http://www.cypress.com).
-
-This project is a derivative work of [DSLogic-fw-keil](https://github.com/DreamSourceLab/DSLogic-fw-keil)
-by DreamSourceLab, which is licensed under GPL v2 or later.
+Some components are third-party IP:
+- **Gowin PLL/FIFO/DDR3 IP** — Property of Gowin Semiconductor
+- **DDR3 Model** — Property of Micron Technology
+- **FX2 Simulation Model** — Original work, GPL v3
 
 ## References
 
-- [DreamSourceLab/DSLogic-fw-keil](https://github.com/DreamSourceLab/DSLogic-fw-keil) — Original reference project
 - [DreamSourceLab/DSLogic-hdl](https://github.com/DreamSourceLab/DSLogic-hdl) — Reference FPGA HDL design
+- [DreamSourceLab/DSLogic-fw-keil](https://github.com/DreamSourceLab/DSLogic-fw-keil) — Original FX2 firmware reference
 - [sigrok/PulseView](https://sigrok.org/wiki/Main_Page) — Upstream host software

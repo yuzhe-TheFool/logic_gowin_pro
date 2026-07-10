@@ -70,8 +70,24 @@ PC → USB EP0 → FX2 → GPIF → FPGA config → sampling → cons_fifo → E
 
 1. Install [Gowin EDA](https://www.gowinsemi.com/) (V1.9.12.03 or later)
 2. Open `logic/logic.gprj` in Gowin IDE
-3. Run **Synthesis → Place & Route → Generate Bitstream**
-4. The output files will be in `logic/impl/pnr/`
+3. **Important:** Go to **Project → Configuration → Dual-Purpose Pin**, check **"Use SSPI as regular IO"**:
+   
+   ![Dual-Purpose Pin Configuration](gui_config.jpg)
+   
+4. Run **Synthesis → Place & Route → Generate Bitstream**
+5. The output files will be in `logic/impl/pnr/`
+
+### Quick Download (No Compilation Needed)
+
+A pre-built bitstream file is provided — you can download it directly without running the full synthesis flow:
+
+1. Open **Gowin EDA Programmer** (Tools → Programmer)
+2. Click **Add Device** and select `logic.fs`
+3. Connect the device and click **Program/Configure**
+
+> `logic.fs` is the FPGA bitstream file ready for download to the Gowin GW2A-18 FPGA.
+>
+> 📥 **Download the latest release:** [stable_v1](https://github.com/yuzhe-TheFool/logic_gowin_pro/releases/tag/stable_v1)
 
 ## Related Repositories
 

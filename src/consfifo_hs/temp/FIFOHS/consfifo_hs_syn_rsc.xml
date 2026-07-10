@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module name="cons_fifo" Register="118" Alu="27" Lut="129" Bsram="16" T_Register="118(118)" T_Alu="27(27)" T_Lut="129(129)" T_Bsram="16(16)"/>

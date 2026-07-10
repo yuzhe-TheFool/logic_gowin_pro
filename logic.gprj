@@ -1,0 +1,28 @@
+<?xml version="1" encoding="UTF-8"?>
+<!DOCTYPE gowin-fpga-project>
+<Project>
+    <Template>FPGA</Template>
+    <Version>5</Version>
+    <Device name="GW2A-18C" pn="GW2A-LV18PG256C8/I7">gw2a18c-011</Device>
+    <FileList>
+        <File path="src/axi4_control.v" type="file.verilog" enable="1"/>
+        <File path="src/axi4_ddr_unit.v" type="file.verilog" enable="1"/>
+        <File path="src/axi4_rcontrol.v" type="file.verilog" enable="1"/>
+        <File path="src/axi4_wcontrol.v" type="file.verilog" enable="1"/>
+        <File path="src/consfifo_hs/consfifo_hs.v" type="file.verilog" enable="1"/>
+        <File path="src/cy_config_decoder.v" type="file.verilog" enable="1"/>
+        <File path="src/cy_config_reg.v" type="file.verilog" enable="1"/>
+        <File path="src/data_capture.v" type="file.verilog" enable="1"/>
+        <File path="src/data_read.v" type="file.verilog" enable="1"/>
+        <File path="src/ddr3_memory_interface/ddr3_memory_interface.v" type="file.verilog" enable="1"/>
+        <File path="src/fifo_hs/wfifo_hs.v" type="file.verilog" enable="1"/>
+        <File path="src/gowin_rpll/gowin_rpll.v" type="file.verilog" enable="1"/>
+        <File path="src/gowin_rpll1/gowin_rpll1.v" type="file.verilog" enable="1"/>
+        <File path="src/logic_top.v" type="file.verilog" enable="1"/>
+        <File path="src/rfifo_hs/rfifo_hs.v" type="file.verilog" enable="1"/>
+        <File path="src/sample_clock_gen.v" type="file.verilog" enable="1"/>
+        <File path="src/sample_trig.v" type="file.verilog" enable="1"/>
+        <File path="src/logic.cst" type="file.cst" enable="1"/>
+        <File path="src/logic.sdc" type="file.sdc" enable="1"/>
+    </FileList>
+</Project>

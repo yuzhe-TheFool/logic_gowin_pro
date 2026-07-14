@@ -60,7 +60,7 @@ PC → USB EP0 → FX2 → GPIF → FPGA config → sampling → cons_fifo → E
 
 - **16 channels** parallel sampling
 - **200MHz** max sample rate (100MHz core + IDDR dual-edge)
-- **Up to 2GB** DDR3 SDRAM storage
+- **Up to 2Gb** DDR3 SDRAM storage
 - **Buffer & Stream** dual-mode data acquisition
 - **Hardware trigger**: edge (rise/fall/both), level (high/low), mask trigger
 - **USB 2.0 High-Speed** (480Mbps, ~40MB/s effective bandwidth)

@@ -44,6 +44,9 @@ The system uses a **three-layer architecture**:
 | **FX2 Controller** | CY7C68013A | USB protocol bridge, GPIF bus control, command dispatch |
 | **FPGA Logic** | GW2A-18 | High-speed sampling, trigger matching, DDR3 caching |
 
+
+> Purchase link for the LogicPi G1 development board: [LogicPi G1 on LCSC](https://item.szlcsc.com/43260768.html)
+
 ### Data Flow
 
 **Buffer mode** (high-speed capture):
